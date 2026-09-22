@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогнозер</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="app-layout">
+        
+        <!-- Левая панель (Только логотип и Фильтры) -->
+        <aside class="sidebar">
+
+            <div id="status" style="display: none;"></div>
+
+            <!-- Блок срезов (появится после загрузки файла) -->
+            <div id="slicersContainer" style="display: none; margin-top: 20px;">
+                <h3 class="slicers-title" data-i18n="filters">Фильтры</h3>
+                <div class="slicer">
+                    <div class="slicer-header">
+                        <span data-i18n="metrics">Показатели</span>
+                        <span class="slicer-clear" onclick="clearSlicer('metricSlicer')" data-i18n="clear">🗙 Очистить</span>
+                    </div>
+                    <div id="metricSlicer" class="slicer-body"></div>
+                </div>
+                <div class="slicer">
+                    <div class="slicer-header" style="align-items: flex-start;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span data-i18n="years">Годы</span>
+                            <!-- Наш новый чекбокс YoY -->
+                            <label style="font-size: 11px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-muted);">
+                                <input type="checkbox" id="yoyToggle"> <span data-i18n="yoy">Сравнение (YoY)</span>
+                            </label>
+                        </div>
+                        <span class="slicer-clear" onclick="clearSlicer('yearSlicer')" data-i18n="clear">🗙 Очистить</span>
+                    </div>
+                    <div id="yearSlicer" class="slicer-body"></div>
+                </div>
+
+                <div class="slicer">
+                    <div class="slicer-header">
+                        <span data-i18n="months">Месяцы</span>
+                        <span class="slicer-clear" onclick="clearSlicer('monthSlicer')" data-i18n="clear">🗙 Очистить</span>
+                    </div>
+                    <div id="monthSlicer" class="slicer-body"></div>
+                </div>
+
+                <div class="slicer">
+                    <div class="slicer-header">
+                        <span data-i18n="days">Дни недели</span>
+                        <span class="slicer-clear" onclick="clearSlicer('daySlicer')" data-i18n="clear">🗙 Очистить</span>
+                    </div>
+                    <div id="daySlicer" class="slicer-body"></div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Основная правая зона -->
+        <div class="main-wrapper">
+            
+            <!-- Верхняя панель (Файл, Дата, Расчет, Выгрузка) -->
+            <header class="top-panel">
+                <div class="top-controls">
+                    <!-- Кнопка Открыть -->
+                    <label class="btn-unified btn-open" title="Загрузить базу Excel">
+                        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;">
+                        <span>📂</span> <span id="fileLabelText" data-i18n="chooseFile">Выбрать файл</span>
+                    </label>
+
+                    <div class="date-control">
+                        <span data-i18n="algoLabel">Алгоритм:</span>
+                        <select id="algoSelect" class="custom-input" style="padding: 6px 10px;">
+                            <option value="combo" data-i18n="algoCombo">Комбо (Тренд + Прошлый год)</option>
+                            <option value="excel" data-i18n="algoExcel">Только Тренд + Сезонность</option>
+                            <option value="naive" data-i18n="algoNaive">Только Аналог прошлого года</option>
+                        </select>
+                    </div>
+                    
+                    <div class="date-control">
+                        <span data-i18n="horizon">Горизонт:</span>
+                        <input type="date" id="endDate" class="custom-input" title="Крайняя дата прогноза">
+                    </div>
+                    
+                    <!-- Кнопка Рассчитать -->
+                    <button id="processBtn" class="btn-unified btn-calc" data-i18n="calcBtn">⚡ Рассчитать прогноз</button>
+                    
+                    <!-- Кнопка Скачать -->
+                    <button id="exportBtn" class="btn-unified btn-save" style="display: none;" data-i18n="saveBtn">💾 Скачать Excel</button>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px;">
+                    <!-- Переключатель языка -->
+                    <select id="langSelect" class="custom-input" style="padding: 6px 12px; border-radius: 8px;">
+                        <option value="ru">🇷🇺 RU</option>
+                        <option value="en">🇬🇧 EN</option>
+                        <option value="uk">🇺🇦 UK</option>
+                    </select>
+                    
+                    <button id="themeToggle" class="btn-unified" data-i18n="themeDark">🌙 Темная тема</button>
+                </div>
+            </header>
+
+            <!-- Зона графика -->
+            <main class="main-content">
+                <div class="chart-section">
+                    <div class="chart-scroll-wrapper">
+                        <div class="chart-container" id="chartContainer">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
